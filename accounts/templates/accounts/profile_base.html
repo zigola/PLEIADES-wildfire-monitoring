@@ -1,0 +1,33 @@
+{% extends "dashboard/base.html" %}
+
+{% block content %}
+<div class="account-shell">
+
+    <aside class="account-side" aria-label="Account menu">
+        <div class="account-id">
+            <div class="avatar" aria-hidden="true">{{ user.username|slice:":2"|upper }}</div>
+            <strong>{% firstof user.get_full_name user.username %}</strong>
+            <small>@{{ user.username }}</small>
+            <span class="role-badge role-{{ user_role }}">{{ user_role }}</span>
+        </div>
+
+        <nav class="account-nav">
+            <a href="{% url 'accounts:profile' %}" {% if section == 'overview' %}class="active" aria-current="page"{% endif %}>Overview</a>
+            <a href="{% url 'accounts:profile_edit' %}" {% if section == 'edit' %}class="active" aria-current="page"{% endif %}>Edit profile</a>
+            <a href="{% url 'accounts:profile_areas' %}" {% if section == 'areas' %}class="active" aria-current="page"{% endif %}>Saved areas <em>{{ area_count }}</em></a>
+            <a href="{% url 'accounts:security' %}" {% if section == 'security' %}class="active" aria-current="page"{% endif %}>Password</a>
+            <a href="{% url 'public_dashboard' %}">Fire Calendar &rarr;</a>
+        </nav>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="account-logout">Log out</button>
+        </form>
+    </aside>
+
+    <section class="account-main">
+        {% block panel %}{% endblock %}
+    </section>
+
+</div>
+{% endblock %}

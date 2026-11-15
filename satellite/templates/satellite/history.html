@@ -1,0 +1,42 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Historical analysis | PLEIADES{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}
+<div class="fc sat" id="sat-app" data-page="history" data-api="{% url 'satellite:overview' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">HISTORICAL ANALYSIS</span>
+    <h1>Seasons, trends and<span>unusual periods.</span></h1>
+    <p>Temporal patterns from real acquisition timestamps, spatial clusters and transparent statistical anomalies.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    {% include "satellite/_filters.html" %}
+    <div id="sat-body" hidden>
+        <div class="chart-legend" id="hist-legend"></div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Detections per year</h2><small>MODIS and VIIRS counted separately</small></div><div class="chart" id="y-chart"></div>
+            <p class="chart-note">Partial years (data starts or stops mid-year) look smaller. VIIRS did not fly before 2012, so raw totals are not comparable across sensors. Use the calendar's harmonized index for that.</p></div>
+        <div class="fc-split two">
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Seasonal pattern</h2><small>mean detections per calendar month</small></div><div class="chart" id="s-chart"></div></div>
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Evolution over time</h2>
+                <select id="t-period" aria-label="Aggregation"><option value="month">Monthly</option><option value="week">Weekly</option><option value="day">Daily</option></select></div>
+                <div class="chart" id="t-chart"></div>
+                <p class="chart-note">Periods with no bars are either zero OR not observed; the calendar tells them apart.</p></div>
+        </div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Unusual activity</h2><small>statistical outliers, not emergencies</small></div>
+            <div class="table-scroll"><table class="data-table anom" id="a-daily"></table></div>
+            <h3 class="sub">Weekly, against other years</h3><div class="table-scroll"><table class="data-table anom" id="a-weekly"></table></div>
+            <p class="chart-note" id="a-note"></p></div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Spatio-temporal clusters (ST-DBSCAN)</h2>
+            <form id="cl-form" class="inline-form"><label>eps km <input id="cl-eps" value="2" size="3"></label><label>eps hours <input id="cl-h" value="24" size="3"></label><label>min points <input id="cl-min" value="3" size="3"></label><button class="secondary-button small" type="submit">Recompute</button></form></div>
+            <div class="table-scroll"><table class="data-table" id="cl-table"></table></div>
+            <p class="chart-note" id="cl-note"></p></div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Repeated activity areas</h2><small>5 km cells active on many different days</small></div>
+            <div class="table-scroll"><table class="data-table" id="rep-table"></table></div>
+            <p class="chart-note">Cells that burn on many days can be recurring agricultural burning, a long fire, or a persistent industrial heat source. This list screens, it does not classify.</p></div>
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/sat_common.js' %}"></script><script src="{% static 'js/sat_pages.js' %}"></script>{% endblock %}

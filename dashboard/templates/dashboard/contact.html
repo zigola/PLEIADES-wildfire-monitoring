@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Contact | PLEIADES{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <span class="eyebrow">CONTACT</span>
+    <h1>Talk to <span>Team PLEIADES.</span></h1>
+    <p>Questions, feedback or collaboration ideas? Send us a message.</p>
+</section>
+
+<section class="page-section narrow">
+    <form method="post" class="panel-form" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="field">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="primary-button">Send message</button>
+    </form>
+</section>
+{% endblock %}

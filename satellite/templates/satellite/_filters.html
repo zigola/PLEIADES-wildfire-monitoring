@@ -1,0 +1,24 @@
+<div class="fc-panel sat-filters">
+    <form id="sat-filters" class="sat-filter-form" novalidate>
+        <label class="f"><span>Area of interest</span><select id="f-preset"></select></label>
+        <label class="f"><span>South</span><input id="f-south" inputmode="decimal"></label>
+        <label class="f"><span>West</span><input id="f-west" inputmode="decimal"></label>
+        <label class="f"><span>North</span><input id="f-north" inputmode="decimal"></label>
+        <label class="f"><span>East</span><input id="f-east" inputmode="decimal"></label>
+        <label class="f"><span>From</span><input id="f-start" type="date"></label>
+        <label class="f"><span>To</span><input id="f-end" type="date"></label>
+        <label class="f"><span>MODIS confidence (0-100 classes)</span>
+            <select id="f-conf-modis"><option value="n">Nominal and high</option><option value="h">High only</option><option value="l">Low, nominal, high</option><option value="all">All, incl. not provided</option></select></label>
+        <label class="f"><span>VIIRS confidence (l / n / h)</span>
+            <select id="f-conf-viirs"><option value="n">Nominal and high</option><option value="h">High only</option><option value="l">Low, nominal, high</option><option value="all">All, incl. not provided</option></select></label>
+        <label class="f"><span>Data category</span>
+            <select id="f-scope"><option value="">Automatic</option><option value="real">NASA observations</option>
+                <option value="demo">Synthetic demo</option><option value="all">Both (listings only)</option></select></label>
+        <fieldset class="f sensors"><legend>Sensors</legend>
+            <label class="check"><input type="checkbox" id="f-modis" checked> MODIS</label>
+            <label class="check"><input type="checkbox" id="f-viirs" checked> VIIRS</label></fieldset>
+        <button type="submit" class="primary-button small">Apply</button>
+    </form>
+    <p class="chart-note">Confidence is filtered separately on each sensor's own scale. The two scales are not equivalent and are never converted.</p>
+    <p id="sat-error" class="fc-error" role="alert" hidden></p>
+</div>

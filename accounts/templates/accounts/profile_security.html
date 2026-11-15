@@ -1,0 +1,24 @@
+{% extends "accounts/profile_base.html" %}
+{% block title %}Password | PLEIADES{% endblock %}
+
+{% block panel %}
+<header class="account-head">
+    <span class="eyebrow">MY ACCOUNT</span>
+    <h1>Change password</h1>
+    <p>Use a long, unique password. You will stay logged in on this device.</p>
+</header>
+
+<form method="post" class="account-card form-card" novalidate>
+    {% csrf_token %}
+    {% for error in form.non_field_errors %}<p class="form-errors">{{ error }}</p>{% endfor %}
+    {% for field in form %}
+        <div class="field">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text and field.name == "new_password1" %}<small class="help">{{ field.help_text|safe }}</small>{% endif %}
+            {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="primary-button">Update password</button>
+</form>
+{% endblock %}

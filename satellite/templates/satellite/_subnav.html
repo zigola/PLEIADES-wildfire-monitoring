@@ -1,0 +1,10 @@
+<nav class="sat-subnav" aria-label="Satellite sections">
+    <a href="{% url 'sat:overview' %}" data-keep {% if sat_active == 'overview' %}class="on"{% endif %}>Overview</a>
+    <a href="{% url 'sat:map' %}" data-keep {% if sat_active == 'map' %}class="on"{% endif %}>Map</a>
+    <a href="{% url 'sat:today' %}" data-keep {% if sat_active == 'today' %}class="on"{% endif %}>Today &amp; estimates</a>
+    <a href="{% url 'sat:harmonization' %}" data-keep {% if sat_active == 'harmonization' %}class="on"{% endif %}>Harmonization</a>
+    <a href="{% url 'public_dashboard' %}" data-keep {% if sat_active == 'calendar' %}class="on"{% endif %}>Burning calendar</a>
+    <a href="{% url 'sat:history' %}" data-keep {% if sat_active == 'history' %}class="on"{% endif %}>Historical analysis</a>
+    <a href="{% url 'sat:quality' %}" data-keep {% if sat_active == 'quality' %}class="on"{% endif %}>Data quality</a>
+    <a href="{% url 'sat:data' %}" data-keep {% if sat_active == 'data' %}class="on"{% endif %}>Data management</a>
+</nav>

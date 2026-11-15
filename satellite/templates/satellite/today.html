@@ -1,0 +1,38 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Today and estimates | PLEIADES{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/fallback.css' %}">{% endblock %}
+{% block content %}
+<div class="fc sat" id="today-app" data-today-url="{% url 'satellite:today' %}" data-map-url="{% url 'sat:map' %}" data-calendar-url="{% url 'public_dashboard' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">TODAY AND HISTORY</span>
+    <h1>What NASA has published,<span>and what it has not.</span></h1>
+    <p>Pick an area and a date. PLEIADES shows verified NASA FIRMS observations when they exist, the same date in earlier years, and, only when nothing was observed yet, a clearly labelled statistical estimate.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    <div class="fc-panel">
+        <form id="td-form" class="aoi-form" novalidate>
+            <label class="f"><span>Area</span><select id="td-preset"></select></label>
+            <label class="f"><span>Date (UTC)</span><input id="td-date" type="date" min="2000-11-01"></label>
+            <button type="submit" class="primary-button small">Check</button>
+        </form>
+        <p class="chart-note">Dates are UTC days, as in NASA FIRMS. Area and date are kept in the address bar so you can share the view.</p>
+        <p id="td-error" class="fc-error" role="alert" hidden></p>
+    </div>
+    <div id="td-flash" class="data-banner ok" role="status" hidden></div>
+    <div id="td-out" aria-live="polite"><p class="empty-note">Loading…</p></div>
+    <div class="fc-panel" id="td-defs">
+        <div class="fc-panel-head"><h2>How to read these results</h2></div>
+        <ul class="plain-list">
+            <li><strong>Satellite thermal anomaly</strong>: a pixel flagged as hot by MODIS or VIIRS. It is not, by itself, a confirmed wildfire (it can be a gas flare, industrial heat or a false alarm).</li>
+            <li><strong>Verified NASA observation</strong>: a record published by NASA FIRMS and stored unchanged in PLEIADES with its source product.</li>
+            <li><strong>Historical observation</strong>: a NASA record from an earlier date. It is never shown as current.</li>
+            <li><strong>Statistical estimate</strong>: an expectation computed from earlier years. It is not an observation, it has no coordinates and it never says that a fire exists.</li>
+        </ul>
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/today.js' %}"></script>{% endblock %}

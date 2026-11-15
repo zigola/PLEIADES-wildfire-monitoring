@@ -1,0 +1,35 @@
+{% extends "accounts/profile_base.html" %}
+{% block title %}Saved areas | PLEIADES{% endblock %}
+
+{% block panel %}
+<header class="account-head">
+    <span class="eyebrow">MY ACCOUNT</span>
+    <h1>Saved areas</h1>
+    <p>Areas of interest you follow ({{ area_count }} of {{ max_areas }}). Open one to see its burning activity calendar.</p>
+</header>
+
+<div class="account-card">
+    {% if areas %}
+    <ul class="area-list">
+        {% for area in areas %}
+        <li>
+            <div>
+                <strong>{{ area.name }}</strong>
+                <small>{{ area.south|floatformat:2 }}&deg;&ndash;{{ area.north|floatformat:2 }}&deg; N &middot; {{ area.west|floatformat:2 }}&deg;&ndash;{{ area.east|floatformat:2 }}&deg; E &middot; about {{ area.area_km2 }} km&sup2;</small>
+            </div>
+            <div class="area-actions">
+                <a class="secondary-button small" href="{% url 'public_dashboard' %}?{{ area.calendar_query }}">Open calendar</a>
+                <form method="post" action="{% url 'accounts:area_delete' area.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="danger-button small" aria-label="Delete {{ area.name }}">Delete</button>
+                </form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+        <p class="empty-note">You have not saved any area yet.</p>
+        <a href="{% url 'public_dashboard' %}" class="primary-button inline">Choose an area on the Fire Calendar</a>
+    {% endif %}
+</div>
+{% endblock %}

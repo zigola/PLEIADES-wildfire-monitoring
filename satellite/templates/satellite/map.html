@@ -1,0 +1,61 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Satellite map | PLEIADES{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/fallback.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">{% endblock %}
+{% block content %}
+<div class="fc sat" id="sat-app" data-page="map" data-api="{% url 'satellite:overview' %}" data-detections-url="{% url 'satellite:detections' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">INTERACTIVE MAP</span>
+    <h1>Every detection,<span>by sensor.</span></h1>
+    <p>MODIS and VIIRS thermal anomalies for your area and dates. Click a point for every attribute the product provides.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    {% include "satellite/_filters.html" %}
+    <div class="fc-panel sensor-maps-panel">
+        <div class="fc-panel-head"><h2>Sensor-specific maps</h2><small>Same area and filters, separate sensor records</small></div>
+        <p class="chart-note">These maps show satellite thermal detections stored in PLEIADES. A hotspot is not by itself confirmation of a wildfire.</p>
+        <div class="sensor-map-grid">
+            <article class="sensor-map-card">
+                <h3>MODIS only</h3>
+                <div id="modis-only-map" class="sensor-map" role="application" aria-label="MODIS-only satellite map"></div>
+                <p id="modis-only-count" class="chart-note">Loading MODIS…</p>
+            </article>
+            <article class="sensor-map-card">
+                <h3>VIIRS only</h3>
+                <div id="viirs-only-map" class="sensor-map" role="application" aria-label="VIIRS-only satellite map"></div>
+                <p id="viirs-only-count" class="chart-note">Loading VIIRS…</p>
+            </article>
+            <article class="sensor-map-card sensor-map-wide">
+                <h3>MODIS + VIIRS comparison</h3>
+                <div id="sensor-comparison-map" class="sensor-map" role="application" aria-label="MODIS and VIIRS comparison map"></div>
+                <p id="sensor-comparison-count" class="chart-note">Loading comparison…</p>
+            </article>
+        </div>
+    </div>
+    <div class="fc-panel">
+        <div class="fc-panel-head"><h2>Detections</h2><small id="map-caption">&nbsp;</small></div>
+        <div class="map-tools">
+            <label class="check"><input type="checkbox" id="m-modis" checked> <i class="lg-dot modis"></i> MODIS</label>
+            <label class="check"><input type="checkbox" id="m-viirs" checked> <i class="lg-dot viirs"></i> VIIRS</label>
+            <label class="check"><input type="checkbox" id="m-clusters"> ST-DBSCAN clusters</label>
+            <select id="m-sat" aria-label="Satellite filter (applies to loaded detections)"><option value="">All satellites</option></select>
+            <select id="m-daynight" aria-label="Day or night"><option value="">Day and night</option><option value="D">Day only</option><option value="N">Night only</option></select>
+            <button type="button" id="btn-draw" class="secondary-button small">Draw area on map</button>
+            <button type="button" id="btn-view" class="secondary-button small">Use map view as area</button>
+        </div>
+        <div id="sat-map" class="fc-map tall" role="application" aria-label="Map of MODIS and VIIRS detections"></div>
+        <div class="map-legend" id="map-legend"></div>
+        <p class="chart-note" id="map-sat-note"></p>
+        <div id="today-strip" class="data-banner" hidden></div>
+        <p class="chart-note">Hollow blue squares: MODIS (about 1 km pixel). Filled orange circles: VIIRS (375 m). Dashed circles: ST-DBSCAN clusters (2 km, 24 h, at least 3 detections). Clusters are groups of detections, not confirmed wildfires.</p>
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{% static 'js/sat_common.js' %}"></script><script src="{% static 'js/sat_popup.js' %}"></script><script src="{% static 'js/sat_map.js' %}"></script><script src="{% static 'js/sensor_maps.js' %}"></script><script src="{% static 'js/sat_year.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,24 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Operator Console | PLEIADES{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <span class="eyebrow">OPERATORS</span>
+    <h1>Operator <span>Console.</span></h1>
+    <p>Satellite data, IoT monitoring sites and alert messaging.</p>
+</section>
+
+<section class="page-section">
+    <div class="callout">
+        <h2>Satellite data management</h2>
+        <p>Import NASA FIRMS MODIS and VIIRS data, run the harmonization pipeline and inspect the import history.</p>
+        <p><a class="primary-button small" href="{% url 'sat:data' %}">Open satellite data management</a></p>
+    </div>
+    <div class="callout">
+        <h2>IoT command center</h2>
+        <p>Live station telemetry, LoRa connectivity, solar and battery measurements, sensor diagnostics and fire-report verification.</p>
+        <p><a class="primary-button small" href="{% url 'iot-dashboard' %}">Open IoT monitoring</a>
+           <a class="secondary-button small" href="{% url 'iot-comparison' %}">Compare IoT &amp; satellite</a></p>
+    </div>
+</section>
+{% endblock %}

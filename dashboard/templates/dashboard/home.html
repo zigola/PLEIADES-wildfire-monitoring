@@ -1,0 +1,212 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block content %}
+
+        <!-- HERO SECTION -->
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <div class="status">
+                    <span class="status-dot"></span>
+                    EARTH OBSERVATION & WILDFIRE INTELLIGENCE
+                </div>
+
+                <h1>
+                    Understanding Wildfires.
+                    <span>Protecting Our Planet.</span>
+                </h1>
+
+                <p class="hero-description">
+                    An intelligent satellite-based platform designed to
+                    harmonize MODIS and VIIRS wildfire detections,
+                    analyze hotspots and support environmental monitoring.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="{% url 'public_dashboard' %}" class="primary-button">
+                        Open Fire Calendar →
+                    </a>
+
+                    <a href="{% url 'methodology' %}" class="secondary-button">
+                        Our Methodology
+                    </a>
+
+                </div>
+
+                <div class="hero-note">
+                    <span>MODIS</span>
+                    <span class="separator">/</span>
+                    <span>VIIRS</span>
+                    <span class="separator">/</span>
+                    <span>AI ANALYTICS</span>
+                </div>
+
+            </div>
+
+
+            <!-- 3D EARTH -->
+            <div class="hero-visual">
+
+                <div id="earth-scene" data-globe-url="{% url 'satellite:globe' %}" data-refresh-url="{% url 'satellite:refresh' %}">
+
+                    <canvas id="earth-canvas"></canvas>
+
+                    <div class="earth-label">
+                        <span class="earth-dot"></span>
+                        EARTH MONITORING
+                    </div>
+
+                </div>
+
+
+                <div class="floating-card card-one">
+                    <span class="card-icon">🛰️</span>
+
+                    <div>
+                        <strong>Satellite Data</strong>
+                        <small>MODIS + VIIRS</small>
+                    </div>
+                </div>
+
+
+                <div class="floating-card card-two">
+                    <span class="card-icon">🧠</span>
+
+                    <div>
+                        <strong>AI Intelligence</strong>
+                        <small>Data Harmonization</small>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- PLATFORM INTRODUCTION -->
+        <section class="platform-section" id="platform">
+
+            <div class="section-heading">
+
+                <span class="eyebrow">THE PLEIADES ECOSYSTEM</span>
+
+                <h2>
+                    One Platform.
+                    <span>Multiple Intelligence Layers.</span>
+                </h2>
+
+                <p>
+                    Integrating satellite observations, artificial intelligence
+                    and environmental monitoring into one platform.
+                </p>
+
+            </div>
+
+
+            <div class="feature-grid">
+
+                <!-- SATELLITE -->
+                <article class="feature-card" id="satellite">
+
+                    <div class="feature-icon">🛰️</div>
+
+                    <span class="feature-number">01 / SATELLITE</span>
+
+                    <h3>Satellite Monitoring</h3>
+
+                    <p>
+                        Process and visualize wildfire hotspot detections
+                        from MODIS and VIIRS satellite instruments.
+                    </p>
+
+                    <a href="{% url 'public_dashboard' %}">Explore module →</a>
+
+                </article>
+
+
+                <!-- AI -->
+                <article class="feature-card" id="intelligence">
+
+                    <div class="feature-icon">🧠</div>
+
+                    <span class="feature-number">02 / AI & ML</span>
+
+                    <h3>AI Intelligence</h3>
+
+                    <p>
+                        Develop algorithms for hotspot matching,
+                        spatial clustering and satellite data analysis.
+                    </p>
+
+                    <a href="{% url 'assistant' %}">Explore module →</a>
+
+                </article>
+
+
+                <!-- IOT -->
+                <article class="feature-card" id="iot">
+
+                    <div class="feature-icon">📡</div>
+
+                    <span class="feature-number">03 / IOT</span>
+
+                    <h3>IoT Monitoring</h3>
+
+                    <p>
+                        Explore live device or clearly labelled simulated sensor readings,
+                        LoRa connectivity, solar energy and fire verification.
+                    </p>
+
+                    <a href="{% url 'iot-dashboard' %}">Explore module →</a>
+
+                </article>
+
+            </div>
+
+        </section>
+
+        <!-- ACCESS LEVELS -->
+        <section class="platform-section" id="access">
+            <div class="section-heading">
+                <span class="eyebrow">ACCESS LEVELS</span>
+                <h2>Three Ways In.<span>One Shared Picture of Fire.</span></h2>
+                <p>Anyone can explore the platform as a guest. Registered members save their areas and get AI-powered insight. Operators manage the data and the field network.</p>
+            </div>
+            <div class="feature-grid">
+                <article class="feature-card">
+                    <span class="feature-number">GUEST</span>
+                    <h3>Explore &amp; Learn</h3>
+                    <p>Use the public fire calendar on any area, read the methodology and download the data. No account needed: continue as a guest.</p>
+                    <a href="{% url 'public_dashboard' %}">Open public calendar →</a>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-number">MEMBER</span>
+                    <h3>Ask the AI Assistant</h3>
+                    <p>Create a free account to save your areas of interest, keep a profile and chat with the assistant about recent fires, weather and risk.</p>
+                    <a href="{% if is_member %}{% url 'assistant' %}{% else %}{% url 'accounts:register' %}{% endif %}">{% if is_member %}Open assistant →{% else %}Create account →{% endif %}</a>
+                </article>
+                <article class="feature-card">
+                    <span class="feature-number">OPERATOR</span>
+                    <h3>Manage Data &amp; IoT</h3>
+                    <p>Full access to the satellite records, IoT monitoring sites and the alert messaging workflow. Granted by an administrator.</p>
+                    <a href="{% if is_operator %}{% url 'console' %}{% else %}{% url 'accounts:login' %}{% endif %}">{% if is_operator %}Open console →{% else %}Operator login →{% endif %}</a>
+                </article>
+            </div>
+        </section>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="{% static 'js/earth.js' %}"></script>
+{% endblock %}

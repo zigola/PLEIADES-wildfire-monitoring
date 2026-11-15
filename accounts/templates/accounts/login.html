@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Log in | PLEIADES{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Welcome back</h1>
+        <p class="auth-description">Log in to your PLEIADES account.</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="form-errors">Username or password is incorrect.</div>
+            {% endif %}
+            <input type="hidden" name="next" value="{{ next }}">
+
+            <label for="{{ form.username.id_for_label }}">Username</label>
+            {{ form.username }}
+
+            <label for="{{ form.password.id_for_label }}">Password</label>
+            {{ form.password }}
+
+            <button type="submit" class="primary-button">Log in</button>
+        </form>
+
+        <div class="auth-divider"><span>or</span></div>
+
+        <form method="post" action="{% url 'accounts:guest' %}">
+            {% csrf_token %}
+            <button type="submit" class="guest-button">Continue as guest</button>
+        </form>
+        <p class="guest-note">No account needed to explore the public Fire Calendar.</p>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="{% url 'accounts:register' %}">Create one</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

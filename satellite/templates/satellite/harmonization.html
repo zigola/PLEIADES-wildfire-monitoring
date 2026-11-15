@@ -1,0 +1,56 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Harmonization | PLEIADES{% endblock %}
+{% block content %}
+<div class="fc sat" id="sat-app" data-page="harmonization" data-api="{% url 'satellite:overview' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">HARMONIZATION</span>
+    <h1>MODIS versus VIIRS,<span>compared, never blended.</span></h1>
+    <p>Sensor-specific measurements are kept side by side. Duplicates and overlaps are flagged, not deleted.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    {% include "satellite/_filters.html" %}
+    <div id="sat-body" hidden>
+        <div class="kpi-row">
+            <div class="kpi"><span>Unified dataset</span><strong id="h-total">-</strong><small>MODIS + VIIRS records, one schema</small></div>
+            <div class="kpi"><span>Exact duplicates flagged</span><strong id="h-dups">-</strong><small>e.g. NRT copies of SP records (kept, excluded)</small></div>
+            <div class="kpi"><span>Overlap groups</span><strong id="h-groups">-</strong><small id="h-groups-note"></small></div>
+            <div class="kpi"><span>Last processing run</span><strong id="h-run" class="sm">-</strong><small id="h-run-note"></small></div>
+        </div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>MODIS / VIIRS matching</h2><small>live, repeatable, nothing is written</small></div>
+            <div class="param-note" role="note"><span class="badge badge-planned">Heuristic parameters</span>
+                <span id="hm-status">Analyst-chosen, configurable defaults. Not validated against independent reference data and not universal scientific thresholds.</span></div>
+            <form id="hm-form" class="inline-form"><label>Time window, ± minutes (heuristic, default 180) <input id="hm-min" value="180" size="4" inputmode="numeric"></label>
+                <label>Radius safety cap, km (default 6) <input id="hm-rad" value="6" size="3" inputmode="decimal"></label><button class="secondary-button small" type="submit">Recompute</button></form>
+            <p class="chart-note" id="hm-explain"></p>
+            <div class="kpi-row" id="h-match-kpis"></div>
+            <div class="kv" id="h-match"></div></div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Why the sensors differ</h2></div><ul class="plain-list" id="h-notes"></ul></div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Sensor-specific statistics</h2><small>values are never averaged across sensors</small></div>
+            <div class="table-scroll"><table class="data-table" id="h-sensors"></table></div>
+            <p class="chart-note">MODIS brightness is channel T21 and VIIRS brightness is I-4 (different wavelengths); FRP is each sensor's own estimate over a different pixel size. They are shown side by side for context only.</p></div>
+        <div class="fc-split two">
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Duplicate and overlap analysis</h2></div><div id="h-overlap" class="kv"></div></div>
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Spatial comparison</h2><small>5 km cells</small></div><div id="h-spatial" class="kv"></div></div>
+        </div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Temporal comparison: acquisition hour (UTC)</h2><small>when each sensor sees fire</small></div>
+            <div class="chart-legend" id="h-hour-legend"></div><div class="chart" id="h-hours"></div>
+            <div class="table-scroll"><table class="data-table" id="h-plat"></table></div></div>
+        <div class="fc-panel" id="method">
+            <div class="fc-panel-head"><h2>Harmonization methodology</h2></div>
+            <ol class="steps compact">
+                <li><strong>Validate and normalize</strong><span>Every FIRMS row is checked (coordinates, UTC date and time, FRP sign, numeric fields) and mapped to one schema. Rejected rows are counted per reason in the import history, never silently dropped.</span></li>
+                <li><strong>Preserve measurements</strong><span>MODIS brightness (T21, T31) and VIIRS brightness (I-4, I-5) keep separate meanings; the original confidence string, satellite code, product, version and import are stored on every row.</span></li>
+                <li><strong>Exact duplicates</strong><span>Same sensor, platform, latitude, longitude, UTC date and time in different products (typically NRT and SP) are linked; the SP copy stays active. Nothing is deleted.</span></li>
+                <li><strong>Overlap groups</strong><span>A MODIS and a VIIRS detection are linked when their pixel footprints overlap (centre distance at most the mean pixel size from the record's scan and track) within a heuristic time window (180 minutes by default, adjustable from 10 to 720; neither value is a validated threshold). Groups are connected components of such links. Both detections stay in the data; this is a flag for analysis, not a merge.</span></li>
+                <li><strong>Comparable activity</strong><span>For calendars, detections are snapped to 5 km cells and counted as active cell-days; VIIRS is rescaled to MODIS with a factor estimated on the overlap period of the selected area. This is an index of activity, not hectares burned.</span></li>
+            </ol>
+            <p class="chart-note">Limitations: overlap thresholds are heuristic; confidence classes of the two sensors are not equivalent; cloud, overpass timing and scan geometry change what each sensor can see.</p>
+        </div>
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/sat_common.js' %}"></script><script src="{% static 'js/sat_pages.js' %}"></script>{% endblock %}

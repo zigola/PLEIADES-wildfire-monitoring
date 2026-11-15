@@ -1,0 +1,38 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Satellite overview | PLEIADES{% endblock %}
+{% block content %}
+<div class="fc sat" id="sat-app" data-page="overview" data-api="{% url 'satellite:overview' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">SATELLITE MODULE</span>
+    <h1>MODIS and VIIRS active fire,<span>one traceable record.</span></h1>
+    <p>Thermal-anomaly detections from NASA FIRMS, validated, de-duplicated and kept with their original sensor, satellite and product.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    {% include "satellite/_filters.html" %}
+    <div id="sat-body" hidden>
+        <div class="kpi-row">
+            <div class="kpi"><span>Valid detections</span><strong id="k-total">-</strong><small>after validation and exact-duplicate removal</small></div>
+            <div class="kpi"><span>MODIS</span><strong id="k-modis">-</strong><small>Terra + Aqua, about 1 km pixels</small></div>
+            <div class="kpi"><span>VIIRS</span><strong id="k-viirs">-</strong><small>Suomi-NPP, NOAA-20, NOAA-21, 375 m</small></div>
+            <div class="kpi"><span>Period</span><strong id="k-period" class="sm">-</strong><small id="k-period-note"></small></div>
+            <div class="kpi"><span>Last successful NASA update</span><strong id="k-update" class="sm">-</strong><small>import time, not observation time</small></div>
+        </div>
+        <div class="fc-split two">
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Selected area</h2><small id="aoi-text"></small></div>
+                <p class="chart-note" id="source-text"></p>
+                <h3 class="sub">Data categories in this selection</h3><div id="cat-list" class="chips"></div>
+                <h3 class="sub">Products</h3><div class="table-scroll"><table class="data-table" id="prod-table"></table></div></div>
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Platforms</h2><small>original satellite codes preserved</small></div>
+                <div class="table-scroll"><table class="data-table" id="plat-table"></table></div>
+                <h3 class="sub">Data quality</h3><div class="table-scroll"><table class="data-table" id="qual-table"></table></div></div>
+        </div>
+        <div class="callout"><h2>Reading this correctly</h2>
+            <p>An active-fire detection is a <strong>satellite thermal anomaly</strong>, not necessarily a confirmed wildfire. MODIS and VIIRS counts are never added into one unit without saying so, and their FRP and brightness values are never averaged. See the <a href="{% url 'sat:harmonization' %}">harmonization page</a> and the <a href="{% url 'methodology' %}">methodology</a>.</p></div>
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/sat_common.js' %}"></script><script src="{% static 'js/sat_pages.js' %}"></script>{% endblock %}

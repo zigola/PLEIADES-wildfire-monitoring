@@ -1,0 +1,3 @@
+<div id="sat-banner" class="data-banner" hidden></div>
+{% if not has_key %}<div class="data-banner warn" id="key-banner">No NASA FIRMS <code>MAP_KEY</code> is configured on this server, so real data cannot be fetched. Set <code>FIRMS_MAP_KEY</code> (see <code>.env.example</code>). Synthetic demonstration data can be loaded; it is always labelled as such.</div>{% endif %}
+{% include "satellite/_live_bar.html" %}

@@ -1,0 +1,46 @@
+{% extends "dashboard/base.html" %}
+{% block title %}About | PLEIADES{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <span class="eyebrow">ABOUT PLEIADES</span>
+    <h1>From satellite pixels to <span>fire intelligence.</span></h1>
+    <p>Burning activity, from wildfires to agricultural burns, follows patterns across seasons and regions. PLEIADES makes those patterns visible.</p>
+</section>
+
+<section class="page-section">
+    <div class="two-col">
+        <div>
+            <h2>The challenge</h2>
+            <p>Satellites have tracked active-fire hotspots for more than two decades, but the record is split across sensors whose data cannot be compared directly. Fire managers are left without a consistent picture of when and where burning has occurred.</p>
+            <p>PLEIADES harmonizes those records into a single <strong>burning activity calendar</strong>, so emergency responders, scientists and land managers can examine historical fire patterns, unusual conditions and critical periods, and use them for early warning.</p>
+        </div>
+        <div>
+            <h2>What the platform does</h2>
+            <ul class="check-list">
+                <li>Combines <strong>MODIS</strong> and <strong>VIIRS</strong> active-fire detections into one comparable record.</li>
+                <li>Shows when burning is typical, and when it is unusual.</li>
+                <li>Offers an <strong>AI assistant</strong> for questions about recent fires, weather and risk.</li>
+                <li>Connects <strong>IoT monitoring sites</strong> and routes alerts to the people responsible, with human confirmation before wider warnings.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="page-section">
+    <h2>Who it is for</h2>
+    <div class="feature-grid">
+        <article class="feature-card"><span class="feature-number">01</span><h3>Emergency responders</h3><p>Anticipate critical periods and focus monitoring where and when fires are most likely.</p></article>
+        <article class="feature-card"><span class="feature-number">02</span><h3>Scientists</h3><p>Study a consistent, long-term record of burning activity across sensors.</p></article>
+        <article class="feature-card"><span class="feature-number">03</span><h3>Land managers</h3><p>Plan prescribed burns and prevention work around historical patterns.</p></article>
+    </div>
+</section>
+
+<section class="page-section">
+    <div class="callout">
+        <h2>Team PLEIADES</h2>
+        <p>A multidisciplinary team from Béni Mellal, Morocco, driven by passion for space, AI, data analysis, remote sensing and innovation. PLEIADES is our entry in the NASA Space Apps Challenge 2026.</p>
+        <a href="{% url 'contact' %}" class="secondary-button">Get in touch</a>
+    </div>
+</section>
+{% endblock %}

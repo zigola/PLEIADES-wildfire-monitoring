@@ -1,0 +1,29 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Data quality | PLEIADES{% endblock %}
+{% block content %}
+<div class="fc sat" id="sat-app" data-page="quality" data-api="{% url 'satellite:overview' %}" data-quality-url="{% url 'satellite:quality' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">DATA QUALITY AND VALIDATION</span>
+    <h1>What is in the database,<span>and what is not.</span></h1>
+    <p>Every figure is computed from the stored records when the page loads. “Not available” means it cannot be determined, which is different from zero.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    <p id="sat-error" class="fc-error" role="alert" hidden></p>
+    <div id="q-body">
+        <div class="kpi-row" id="q-kpis"></div>
+        <div class="fc-split two">
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Real NASA FIRMS observations</h2><small>nasa</small></div><div class="table-scroll"><table class="data-table" id="q-real"></table></div></div>
+            <div class="fc-panel"><div class="fc-panel-head"><h2>Synthetic demonstration data</h2><small>not NASA</small></div><div class="table-scroll"><table class="data-table" id="q-demo"></table></div></div>
+        </div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Imports and validation</h2></div><div class="table-scroll"><table class="data-table" id="q-imp"></table></div>
+            <h3 class="sub">Rows rejected by reason</h3><div id="q-reasons" class="chips"></div>
+            <h3 class="sub">Recent problems</h3><div class="table-scroll"><table class="data-table" id="q-errors"></table></div></div>
+        <div class="callout"><h2>How to read this page</h2><ul id="q-notes"></ul></div>
+    </div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/sat_common.js' %}"></script><script src="{% static 'js/sat_pages.js' %}"></script>{% endblock %}

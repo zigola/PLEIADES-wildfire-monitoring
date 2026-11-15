@@ -1,0 +1,129 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}PLEIADES AI | Satellite Fire Intelligence{% endblock %}
+
+{% block content %}
+<section class="page-hero ai-hero">
+    <span class="eyebrow">PLEIADES INTELLIGENCE</span>
+    <h1>AI <span>Assistant.</span></h1>
+    <p>Ask about NASA MODIS/VIIRS observations, IoT sensor telemetry, LoRa links, solar power and incident verification.</p>
+</section>
+
+<section class="page-section ai-chat-section">
+    <div class="ai-chat-shell" id="PLEIADES-chat"
+         data-chat-url="{% url 'assistant_chat' %}"
+         data-configured="{% if assistant_configured %}true{% else %}false{% endif %}">
+        <header class="ai-chat-header">
+            <div class="ai-avatar" aria-hidden="true">P</div>
+            <div class="ai-chat-heading">
+                <h2>PLEIADES AI</h2>
+                <p>Satellite + IoT evidence assistant</p>
+            </div>
+            <span class="ai-status"><i></i> Evidence-grounded</span>
+        </header>
+
+        {% if not assistant_configured %}
+        <div class="ai-config-notice" role="status">
+            <strong>Language model not configured</strong>
+            <p>Questions are still answered directly from the PLEIADES database. For fuller explanations, set <code>GEMINI_API_KEY</code> in the server environment. Never paste the key into this page or browser code.</p>
+        </div>
+        {% endif %}
+
+        <div class="ai-chat-messages" id="ai-messages" aria-live="polite" aria-label="Conversation">
+            <article class="ai-message ai-message-assistant">
+                <div class="ai-message-label">PLEIADES AI</div>
+                <p>Hello {{ user.username|escape }}. I can explain satellite observations, field-station telemetry, sensor readings and verification reports stored in PLEIADES. I distinguish real device data from simulation and explain when evidence is insufficient.</p>
+            </article>
+        </div>
+
+        <div class="ai-suggestions" aria-label="Suggested questions">
+            <button type="button" data-prompt="How many real NASA observations are stored, and which results are synthetic? Summarize all MODIS and VIIRS data currently stored in PLEIADES, including date range and data quality.">What data is available?</button>
+            <button type="button" data-prompt="Compare the latest MODIS and VIIRS records and explain the limitations.">How does anomaly detection work?</button>
+            <button type="button" data-prompt="What do the latest import jobs and data-quality checks say?">What are the data limitations?</button>
+        </div>
+
+        <form class="ai-chat-form" id="ai-chat-form">
+            {% csrf_token %}
+            <label class="sr-only" for="ai-question">Your question</label>
+            <textarea id="ai-question" name="message" rows="2" maxlength="1200" placeholder="Ask about MODIS, VIIRS, IoT, LoRa, solar, sensors or alerts…" required></textarea>
+            <button type="submit" id="ai-send" aria-label="Send question">
+                <span>Send</span><span aria-hidden="true">↗</span>
+            </button>
+        </form>
+        <p class="ai-disclaimer">AI-generated explanations can be wrong. Verify scientific conclusions against the underlying NASA FIRMS records and methodology. Hotspots are not confirmed burned areas or fire probabilities.</p>
+    </div>
+</section>
+
+<script>
+(() => {
+    const shell = document.getElementById('PLEIADES-chat');
+    if (!shell) return;
+    const form = document.getElementById('ai-chat-form');
+    const input = document.getElementById('ai-question');
+    const send = document.getElementById('ai-send');
+    const messages = document.getElementById('ai-messages');
+    const history = [];
+
+    function addMessage(role, text) {
+        const article = document.createElement('article');
+        article.className = `ai-message ${role === 'user' ? 'ai-message-user' : 'ai-message-assistant'}`;
+        const label = document.createElement('div');
+        label.className = 'ai-message-label';
+        label.textContent = role === 'user' ? 'YOU' : 'PLEIADES AI';
+        const body = document.createElement('p');
+        body.textContent = text;
+        article.append(label, body);
+        messages.appendChild(article);
+        messages.scrollTop = messages.scrollHeight;
+        return article;
+    }
+
+    async function ask(question) {
+        if (!question.trim() || send.disabled) return;
+        addMessage('user', question);
+        const priorHistory = history.slice(-8);
+        history.push({role: 'user', text: question});
+        input.value = '';
+        send.disabled = true;
+        send.querySelector('span:first-child').textContent = 'Thinking…';
+        const pending = addMessage('model', 'Analysing the available PLEIADES evidence…');
+        try {
+            const csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
+            const response = await fetch(shell.dataset.chatUrl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrf},
+                body: JSON.stringify({message: question, history: priorHistory})
+            });
+            const data = await response.json();
+            pending.remove();
+            if (!response.ok) throw new Error(data.error || 'The request could not be completed.');
+            const shown = (data.notice ? data.notice + '\n\n' : '') + data.answer +
+                (data.sources && data.sources.length ? '\n\nDatabase queries used: ' + data.sources.join(', ') : '');
+            addMessage('model', shown);
+            history.push({role: 'model', text: data.answer});
+        } catch (error) {
+            pending.remove();
+            addMessage('model', error.message || 'Connection error. Please try again.');
+        } finally {
+            send.disabled = false;
+            send.querySelector('span:first-child').textContent = 'Send';
+            input.focus();
+        }
+    }
+
+    form.addEventListener('submit', event => {
+        event.preventDefault();
+        ask(input.value.trim());
+    });
+    input.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            form.requestSubmit();
+        }
+    });
+    shell.querySelectorAll('[data-prompt]').forEach(button => {
+        button.addEventListener('click', () => ask(button.dataset.prompt));
+    });
+})();
+</script>
+{% endblock %}

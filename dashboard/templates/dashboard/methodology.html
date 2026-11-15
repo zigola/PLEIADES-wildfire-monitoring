@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Methodology | PLEIADES{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+    <span class="eyebrow">METHODOLOGY</span>
+    <h1>How PLEIADES builds <span>one consistent fire record.</span></h1>
+    <p>A transparent overview of the data, the harmonization approach and the limits of what the platform can tell you.</p>
+</section>
+
+<section class="page-section">
+    <h2>Data sources</h2>
+    <div class="feature-grid two">
+        <article class="feature-card"><span class="feature-number">MODIS</span><h3>Long record, coarser pixels</h3><p>Active-fire detections at roughly 1&nbsp;km resolution, available for more than two decades.</p></article>
+        <article class="feature-card"><span class="feature-number">VIIRS</span><h3>Newer, finer detail</h3><p>Active-fire detections at roughly 375&nbsp;m resolution, able to see smaller and cooler fires, available since 2012.</p></article>
+    </div>
+    <p class="muted-note">Because the sensors differ in resolution and sensitivity, raw counts from one cannot be compared directly with the other. That is the gap PLEIADES closes.</p>
+</section>
+
+<section class="page-section">
+    <h2>Approach</h2>
+    <ol class="steps">
+        <li><strong>Ingest</strong><span>Load NASA FIRMS active-fire CSV files for MODIS and VIIRS (<code>import_firms</code>). Low-confidence detections are excluded by default and can be included from the calendar.</span><em class="badge badge-live">Live</em></li>
+        <li><strong>Common grid</strong><span>Every detection is snapped to a 0.05&deg; cell (about 5&nbsp;km), coarser than both sensors' pixels. We count <em>active cell-days</em> instead of pixels, which removes the effect of VIIRS reporting several pixels for one fire.</span><em class="badge badge-live">Live</em></li>
+        <li><strong>Cross-calibrate</strong><span>On the years both sensors fly, the factor <code>MODIS cell-days / VIIRS cell-days</code> rescales VIIRS onto the MODIS scale. It is estimated for your area, with a region-wide fallback for very small areas. The weekly correlation between the sensors is shown as a quality check.</span><em class="badge badge-live">Live</em></li>
+        <li><strong>Harmonize</strong><span>The daily index uses rescaled VIIRS where it exists (better sensitivity) and MODIS before that, giving one series with no artificial jump when VIIRS starts.</span><em class="badge badge-live">Live</em></li>
+        <li><strong>Calendar &amp; critical periods</strong><span>Activity is binned in 7-day weeks. Weeks that reach at least half of the typical peak are merged into critical periods (fire seasons).</span><em class="badge badge-live">Live</em></li>
+        <li><strong>Unusual conditions</strong><span>Each week of each year is compared with the same week in all other years (leave-one-year-out). Weeks 2 or more standard deviations above typical are flagged, with a Poisson-like floor on the deviation so small counts do not produce huge scores.</span><em class="badge badge-live">Live</em></li>
+        <li><strong>Assist</strong><span>Let members query the record and risk indicators through an AI assistant.</span><em class="badge badge-planned">Planned</em></li>
+    </ol>
+</section>
+
+<section class="page-section">
+    <div class="callout">
+        <h2>Limits &amp; honesty</h2>
+        <p>Satellite hotspots show detected heat, not confirmed damage. Cloud cover and overpass timing can hide fires. Risk indicators are estimates built from historical patterns and weather data, not guarantees. Harmonized values are in MODIS-equivalent units, not hectares burned. Official fire authorities remain the source of truth for emergencies.</p>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "accounts/profile_base.html" %}
+{% block title %}My profile | PLEIADES{% endblock %}
+
+{% block panel %}
+<header class="account-head">
+    <span class="eyebrow">MY ACCOUNT</span>
+    <h1>Hello, {% firstof user.first_name user.username %}.</h1>
+    <p>Your PLEIADES workspace: your details, your access level and the areas you follow.</p>
+</header>
+
+<div class="stat-grid">
+    <div class="stat"><span>Access level</span><strong><span class="role-badge role-{{ user_role }}">{{ user_role }}</span></strong></div>
+    <div class="stat"><span>I am a</span><strong>{{ profile.get_user_type_display }}</strong></div>
+    <div class="stat"><span>Member since</span><strong>{{ user.date_joined|date:"j M Y" }}</strong></div>
+    <div class="stat"><span>Saved areas</span><strong>{{ area_count }}</strong></div>
+</div>
+
+<div class="account-card">
+    <h2>Details</h2>
+    <dl class="detail-list">
+        <div><dt>Username</dt><dd>{{ user.username }}</dd></div>
+        <div><dt>Name</dt><dd>{{ user.get_full_name|default:"Not provided" }}</dd></div>
+        <div><dt>Email</dt><dd>{{ user.email|default:"Not provided" }}</dd></div>
+        <div><dt>Organization</dt><dd>{{ profile.organization|default:"Not provided" }}</dd></div>
+        <div><dt>Country</dt><dd>{{ profile.country|default:"Not provided" }}</dd></div>
+        {% if profile.bio %}<div><dt>About</dt><dd>{{ profile.bio }}</dd></div>{% endif %}
+    </dl>
+    <div class="profile-actions left">
+        <a href="{% url 'accounts:profile_edit' %}" class="secondary-button">Edit profile</a>
+        {% if is_operator and user.is_staff %}<a href="{% url 'admin:index' %}" class="secondary-button">Admin site</a>{% endif %}
+    </div>
+</div>
+
+<div class="account-card">
+    <h2>Recent areas</h2>
+    {% if recent_areas %}
+        <ul class="area-list compact">
+            {% for area in recent_areas %}
+            <li>
+                <div><strong>{{ area.name }}</strong><small>{{ area.area_km2 }} km&sup2; &middot; saved {{ area.created_at|date:"j M Y" }}</small></div>
+                <a class="secondary-button small" href="{% url 'public_dashboard' %}?{{ area.calendar_query }}">Open calendar</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="muted-note"><a href="{% url 'accounts:profile_areas' %}">Manage all saved areas &rarr;</a></p>
+    {% else %}
+        <p class="empty-note">No saved areas yet. Draw an area on the Fire Calendar and press &ldquo;Save this area&rdquo;.</p>
+        <a href="{% url 'public_dashboard' %}" class="primary-button inline">Open the Fire Calendar</a>
+    {% endif %}
+</div>
+{% endblock %}

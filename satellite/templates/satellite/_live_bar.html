@@ -1,0 +1,8 @@
+{% load static %}
+<div class="data-banner live-bar" id="live-bar" data-status-url="{% url 'satellite:refresh_status' %}" data-refresh-url="{% url 'satellite:refresh' %}" data-sync-url="{% url 'satellite:sync_status' %}">
+    <button type="button" class="primary-button small" id="btn-live">Refresh now from NASA FIRMS</button>
+    <span id="live-status" class="chart-note">Pulls today's and the last 2 days' MODIS + VIIRS detections (UTC) for the selected area.</span>
+    <small id="sync-status" class="chart-note sync-line"></small>
+</div>
+<script src="{% static 'js/live_refresh.js' %}" defer></script>
+<script src="{% static 'js/sync_watch.js' %}" defer></script>

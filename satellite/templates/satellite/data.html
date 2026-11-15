@@ -1,0 +1,58 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Satellite data management | PLEIADES{% endblock %}
+{% block content %}
+<div class="fc sat" id="sat-app" data-page="data" data-api="{% url 'satellite:overview' %}" data-imports-url="{% url 'satellite:imports' %}" data-export-url="{% url 'satellite:export' %}" data-key-url="{% url 'sat:key_status' %}">
+<section class="page-hero compact">
+    <span class="eyebrow">DATA MANAGEMENT</span>
+    <h1>Import, process and<span>inspect the record.</span></h1>
+    <p>NASA FIRMS imports with full provenance, the harmonization run, data quality and filtered export.</p>
+</section>
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+    {% include "satellite/_banner.html" %}
+    <div class="kpi-row">
+        <div class="kpi"><span>NASA FIRMS rows stored</span><strong>{{ counts.real }}</strong><small>real observations</small></div>
+        <div class="kpi"><span>Synthetic demo rows</span><strong>{{ counts.demo }}</strong><small>never NASA data</small></div>
+        <div class="kpi"><span>MAP_KEY</span><strong class="sm">{% if has_key %}configured{% else %}not set{% endif %}</strong><small id="key-detail">{% if is_operator and has_key %}<button type="button" class="link-btn" id="btn-key">Test key and show budget</button>{% else %}the key is never shown{% endif %}</small></div>
+    </div>
+
+    {% if is_operator %}
+    <div class="fc-split two">
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Import from NASA FIRMS</h2><small>operators only</small></div>
+            <form method="post" action="{% url 'sat:start_import' %}" class="stack-form">{% csrf_token %}
+                <fieldset class="fam"><legend>Satellites</legend>{{ import_form.families }}</fieldset>
+                <div class="grid4">{% for f in import_form %}{% if f.name in 'south west north east' %}<label class="f"><span>{{ f.label }}</span>{{ f }}</label>{% endif %}{% endfor %}</div>
+                <div class="grid2"><label class="f"><span>Start (UTC)</span>{{ import_form.start }}</label><label class="f"><span>End (UTC)</span>{{ import_form.end }}</label></div>
+                <button class="primary-button small" type="submit" {% if not has_key %}disabled title="FIRMS_MAP_KEY is not set"{% endif %}>Start import</button>
+                <p class="chart-note">Standard-processing (SP) data is used where FIRMS provides it, near-real-time (NRT) after it. Requests are split into 5-day chunks (FIRMS limit). Up to 366 days per submission here; use <code>import_firms</code> for longer periods.</p>
+            </form></div>
+        <div class="fc-panel"><div class="fc-panel-head"><h2>Processing</h2></div>
+            <form method="post" action="{% url 'sat:start_harmonize' %}" class="stack-form">{% csrf_token %}
+                <div class="grid2"><label class="f"><span>Category</span>{{ harmonize_form.scope }}</label><span></span>
+                <label class="f"><span>From (optional)</span>{{ harmonize_form.start }}</label><label class="f"><span>To (optional)</span>{{ harmonize_form.end }}</label></div>
+                <button class="secondary-button small" type="submit">Run harmonization (duplicates + overlaps)</button></form>
+            <form method="post" action="{% url 'sat:load_demo' %}" class="stack-form">{% csrf_token %}
+                <button class="secondary-button small" type="submit">Load SYNTHETIC demo data</button>
+                <p class="chart-note">Demo rows are generated, flagged and labelled everywhere. They replace only earlier demo rows.</p></form></div>
+    </div>
+    {% else %}
+    <div class="data-banner">Importing and processing require an operator account. Everything below is read-only.</div>
+    {% endif %}
+
+    <div class="fc-panel"><div class="fc-panel-head"><h2>Import history</h2><small id="imp-status">loading</small></div>
+        <div class="table-scroll"><table class="data-table" id="imp-table"></table></div></div>
+
+    <div class="fc-panel"><div class="fc-panel-head"><h2>Export filtered detections (CSV)</h2></div>
+        <p class="chart-note">Uses the area, dates, sensors, confidence and category chosen below; exact duplicates are excluded. Provenance columns (product, version, category, import id) are included.</p>
+        {% include "satellite/_filters.html" %}
+        <p><a id="btn-export" class="primary-button small" href="#">Download CSV</a></p></div>
+
+    <div class="fc-panel"><div class="fc-panel-head"><h2>FIRMS products used</h2></div>
+        <div class="table-scroll"><table class="data-table"><thead><tr><th>Source id</th><th>Sensor</th><th>Platform</th><th>Processing</th><th>Pixel</th></tr></thead><tbody>
+        {% for p in products %}<tr><td><code>{{ p.id }}</code></td><td>{{ p.sensor }}</td><td>{{ p.platforms }}</td><td>{{ p.processing }}</td><td>{{ p.resolution }}</td></tr>{% endfor %}</tbody></table></div>
+        <p class="chart-note">Identifiers from the official FIRMS Area API documentation. SP = Standard Processing (months of latency), NRT = Near Real-Time.</p></div>
+</section>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'js/sat_common.js' %}"></script><script src="{% static 'js/sat_pages.js' %}"></script>{% endblock %}

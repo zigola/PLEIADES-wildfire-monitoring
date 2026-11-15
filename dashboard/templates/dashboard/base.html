@@ -1,0 +1,95 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PLEIADES | Wildfire Intelligence{% endblock %}</title>
+    <meta name="description" content="PLEIADES harmonizes MODIS and VIIRS active-fire detections into a burning activity calendar for early warning and fire management.">
+    <meta name="theme-color" content="#040712">
+    <meta property="og:title" content="PLEIADES | Wildfire Intelligence">
+    <meta property="og:description" content="One consistent record of fire: MODIS and VIIRS harmonized into a burning activity calendar.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/png" href="{% static 'images/polaris_logo.png' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to content</a>
+
+{% with current=request.resolver_match.url_name %}
+    <header class="navbar">
+
+        <a href="{% url 'home' %}" class="brand">
+            <img src="{% static 'images/polaris_logo.png' %}" alt="PLEIADES logo">
+            <span>PLEIADES</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Main navigation">
+            <a href="{% url 'home' %}" {% if current == 'home' %}class="active"{% endif %}>Home</a>
+            <a href="{% url 'public_dashboard' %}" {% if current == 'public_dashboard' %}class="active"{% endif %}>Fire Calendar</a>
+            <a href="{% url 'sat:overview' %}" {% if request.resolver_match.namespace == 'sat' %}class="active"{% endif %}>Satellite</a>
+            <a href="{% url 'iot-dashboard' %}" {% if request.resolver_match.namespace != 'sat' and request.resolver_match.url_name == 'iot-dashboard' %}class="active"{% endif %}>IoT</a>
+            <a href="{% url 'methodology' %}" {% if current == 'methodology' %}class="active"{% endif %}>Methodology</a>
+            <a href="{% url 'about' %}" {% if current == 'about' %}class="active"{% endif %}>About</a>
+            <a href="{% url 'contact' %}" {% if current == 'contact' %}class="active"{% endif %}>Contact</a>
+            {% if is_member %}
+                <a href="{% url 'assistant' %}" {% if current == 'assistant' %}class="active"{% endif %}>AI Assistant</a>
+            {% endif %}
+            {% if is_operator %}
+                <a href="{% url 'console' %}" {% if current == 'console' %}class="active"{% endif %}>Operator Console</a>
+            {% endif %}
+        </nav>
+
+        <div class="nav-actions">
+            {% if user.is_authenticated %}
+                <a href="{% url 'accounts:profile' %}" class="user-chip" title="My profile">
+                    <span class="user-chip-name">{{ user.username }}</span>
+                    <span class="role-badge role-{{ user_role }}">{{ user_role }}</span>
+                </a>
+                <form method="post" action="{% url 'accounts:logout' %}" class="logout-form">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-ghost">Logout</button>
+                </form>
+            {% else %}
+                {% if is_guest %}<span class="guest-chip" title="You are browsing without an account">Guest</span>{% endif %}
+                <a href="{% url 'accounts:login' %}" class="nav-ghost">Log in</a>
+                <a href="{% url 'accounts:register' %}" class="nav-button">Create account</a>
+            {% endif %}
+        </div>
+
+    </header>
+{% endwith %}
+
+    {% if messages %}
+    <div class="flash-wrap">
+        {% for message in messages %}
+            <div class="flash flash-{{ message.tags }}" role="status">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main id="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">
+        <div class="footer-brand">
+            <img src="{% static 'images/polaris_logo.png' %}" alt="">
+            <span>PLEIADES</span>
+        </div>
+        <p>Satellite-Based Wildfire Intelligence Platform</p>
+        <nav class="footer-links" aria-label="Footer">
+            <a href="{% url 'public_dashboard' %}">Fire Calendar</a>
+            <a href="{% url 'sat:overview' %}">Satellite</a>
+            <a href="{% url 'iot-dashboard' %}">IoT Monitoring</a>
+            <a href="{% url 'methodology' %}">Methodology</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'contact' %}">Contact</a>
+            <a href="https://firms.modaps.eosdis.nasa.gov/" rel="noopener" target="_blank">NASA FIRMS</a>
+        </nav>
+        <span class="team">DEVELOPED BY TEAM PLEIADES · BÉNI MELLAL · NASA SPACE APPS 2026</span>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

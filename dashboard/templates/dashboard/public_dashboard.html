@@ -1,0 +1,180 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+{% block title %}Fire Calendar | PLEIADES{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/fallback.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+{% endblock %}
+
+{% block content %}
+<div id="fc-app" class="fc" data-summary-url="{% url 'satellite:summary' %}" data-cells-url="{% url 'satellite:cells' %}" data-calendar-url="{% url 'satellite:calendar' %}" data-day-url="{% url 'satellite:day' %}" data-map-url="{% url 'sat:map' %}" data-compare-url="{% url 'satellite:compare' %}">
+
+<section class="page-hero compact">
+    <span class="eyebrow">BURNING ACTIVITY CALENDAR</span>
+    <h1>One consistent record of fire,<span>MODIS and VIIRS harmonized.</span></h1>
+    <p>Pick an area of interest to see when burning happens, how this year compares with a typical one, and which periods are critical.</p>
+</section>
+
+<section class="fc-wrap">
+    {% include "satellite/_subnav.html" %}
+
+    <div id="data-banner" class="data-banner" hidden></div>
+    {% include "satellite/_live_bar.html" %}
+    <p id="fc-error" class="fc-error" role="alert" hidden></p>
+
+    <!-- AREA OF INTEREST -->
+    <div class="fc-panel" id="aoi">
+        <div class="fc-panel-head"><h2>Area of interest</h2><small>Choose a region, type coordinates or draw on the map.</small></div>
+        <form id="aoi-form" class="aoi-form" novalidate>
+            <label class="f"><span>Region</span><select id="aoi-preset"></select></label>
+            <label class="f"><span>South</span><input id="aoi-south" inputmode="decimal"></label>
+            <label class="f"><span>West</span><input id="aoi-west" inputmode="decimal"></label>
+            <label class="f"><span>North</span><input id="aoi-north" inputmode="decimal"></label>
+            <label class="f"><span>East</span><input id="aoi-east" inputmode="decimal"></label>
+            <button type="submit" class="primary-button small">Apply</button>
+            <button type="button" id="btn-draw" class="secondary-button small">Draw area on map</button>
+        </form>
+        <div class="aoi-options">
+            <label class="check"><input type="checkbox" id="conf-low"> Include low-confidence detections <small>(each sensor's own scale)</small></label>
+            <label class="check">Sensors
+                <select id="sensor-select" aria-label="Sensors"><option value="">Combined (MODIS + VIIRS)</option><option value="MODIS">MODIS only</option><option value="VIIRS">VIIRS only</option></select></label>
+            <label class="check">Data category
+                <select id="scope-select" aria-label="Data category"><option value="">Automatic</option><option value="real">NASA observations</option><option value="demo">Synthetic demo</option><option value="all">Both (not available here)</option></select></label>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'accounts:area_save' %}" class="save-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" id="save-next" value="{% url 'public_dashboard' %}">
+                <input type="hidden" class="save-aoi" data-k="south" name="south">
+                <input type="hidden" class="save-aoi" data-k="west" name="west">
+                <input type="hidden" class="save-aoi" data-k="north" name="north">
+                <input type="hidden" class="save-aoi" data-k="east" name="east">
+                <input id="area-name" name="name" maxlength="80" required placeholder="Name this area" aria-label="Area name">
+                <button type="submit" class="secondary-button small">Save this area</button>
+            </form>
+            {% else %}
+            <input type="hidden" id="area-name">
+            <p class="save-cta">{% if is_guest %}Browsing as guest. {% endif %}<a href="{% url 'accounts:register' %}">Create a free account</a> to save areas, or <a href="{% url 'accounts:login' %}">log in</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="fc-body" hidden>
+
+        <!-- KPIs -->
+        <div class="kpi-row" aria-live="polite">
+            <div class="kpi"><span>Record</span><strong id="kpi-years">-</strong><small>years in the database</small></div>
+            <div class="kpi"><span>Main fire season</span><strong id="kpi-peak">-</strong><small id="kpi-peak-note"></small></div>
+            <div class="kpi"><span>Unusual weeks</span><strong id="kpi-unusual">-</strong><small>2+ standard deviations above typical</small></div>
+            <div class="kpi"><span>VIIRS to MODIS factor</span><strong id="kpi-scale">-</strong><small id="kpi-scale-note"></small></div>
+            <div class="kpi"><span>Sensor agreement (r)</span><strong id="kpi-r">-</strong><small id="kpi-r-note"></small></div>
+        </div>
+
+        <!-- MAP + CALENDAR -->
+        <div class="fc-split" id="calendar">
+            <div class="fc-panel map-panel">
+                <div class="fc-panel-head"><h2>Where it burned</h2><small id="map-caption">&nbsp;</small></div>
+                <div id="fc-map" class="fc-map" role="application" aria-label="Map of burning cells"></div>
+                <p class="chart-note">Each square is a 5 km cell with at least one detection. Darker orange = fewer active days, light = more.</p>
+            </div>
+
+            <div class="fc-panel">
+                <div class="fc-panel-head">
+                    <h2 id="heat-title">Burning activity</h2>
+                    <div class="year-ctl">
+                        <button type="button" id="year-prev" class="icon-btn" aria-label="Previous year">&lsaquo;</button>
+                        <select id="year-select" aria-label="Year"></select>
+                        <button type="button" id="year-next" class="icon-btn" aria-label="Next year">&rsaquo;</button>
+                    </div>
+                </div>
+                <div class="heat-scroll" id="heatmap"></div>
+                <div class="heat-legend" id="heat-legend"></div>
+                <p class="chart-note">Each square is one day. Click a day to see only that day on the map. <button type="button" id="btn-clear-day" class="link-btn">Show the whole year</button></p>
+                <details class="tbl">
+                    <summary>Table view</summary>
+                    <table id="year-table" class="data-table"></table>
+                </details>
+            </div>
+        </div>
+
+        <!-- DAY INSPECTION -->
+        <div class="fc-panel day-panel" id="day-panel" hidden>
+            <div class="fc-panel-head"><h2>Selected day</h2><small>every number traces to stored detections</small></div>
+            <div id="day-body"></div>
+        </div>
+
+        <!-- MONTHLY SUMMARY + COMPARISON -->
+        <div class="fc-panel">
+            <div class="fc-panel-head"><h2>Monthly summary</h2><small id="cal-summary"></small></div>
+            <div class="table-scroll"><table id="month-table" class="data-table"></table></div>
+            <p class="chart-note" id="cal-method"></p>
+            <div class="export-row"><button type="button" id="btn-detections" class="secondary-button small" data-url="{% url 'satellite:export' %}">Download detections (CSV)</button></div>
+        </div>
+        <div class="fc-panel">
+            <div class="fc-panel-head"><h2>Compare two periods</h2><small>same months in two different years</small></div>
+            <div class="cmp-form">
+                <label>Year A <select id="cmp-a"></select></label><label>Year B <select id="cmp-b"></select></label>
+                <label>From month <select id="cmp-from">{% for m in "123456789" %}<option value="{{ m }}">{{ m }}</option>{% endfor %}<option value="10">10</option><option value="11">11</option><option value="12">12</option></select></label>
+                <label>To month <select id="cmp-to"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12" selected>12</option></select></label>
+                <button type="button" id="cmp-run" class="secondary-button small">Compare</button>
+            </div>
+            <div id="cmp-out"></div>
+        </div>
+
+        <!-- SAME DATE ACROSS YEARS (added) -->
+        <div class="fc-panel" id="same-date-panel" data-url="{% url 'satellite:same_date' %}" data-today-page="{% url 'sat:today' %}">
+            <div class="fc-panel-head"><h2>Same date, every year</h2><small>detections and FRP for one calendar date across all stored years</small></div>
+            <div class="same-date-form">
+                <label>Date <input type="date" id="sd-date" min="2000-11-01"></label>
+                <label>Window <select id="sd-window"><option value="0">Exact date</option><option value="3">&plusmn; 3 days</option><option value="7">&plusmn; 7 days</option></select></label>
+                <label>Satellite <select id="sd-sat"><option value="">All satellites</option><option value="Terra">Terra (MODIS)</option><option value="Aqua">Aqua (MODIS)</option><option value="N">Suomi-NPP (VIIRS)</option><option value="N20">NOAA-20 (VIIRS)</option><option value="N21">NOAA-21 (VIIRS)</option></select></label>
+                <button type="button" id="sd-run" class="secondary-button small">Compare years</button>
+            </div>
+            <p id="sd-error" class="fc-error" role="alert" hidden></p>
+            <div class="table-scroll"><table id="sd-table" class="data-table sd-table"></table></div>
+            <p class="chart-note" id="sd-note"></p>
+        </div>
+
+        <!-- CLIMATOLOGY -->
+        <div class="fc-panel">
+            <div class="fc-panel-head"><h2>Typical season vs. the selected year</h2><small>Weekly burning activity</small></div>
+            <div class="chart-legend" id="clim-legend"></div>
+            <div class="chart" id="clim-chart"></div>
+            <p class="chart-note" id="clim-note"></p>
+            <div class="periods" id="periods"></div>
+        </div>
+
+        <!-- ANOMALIES -->
+        <div class="fc-panel">
+            <div class="fc-panel-head"><h2>Unusual conditions</h2><small>Weeks well above what other years show for the same weeks</small></div>
+            <div class="table-scroll">
+                <table class="data-table anom">
+                    <thead><tr><th>Week</th><th>Activity</th><th>Typical</th><th>z-score</th><th></th></tr></thead>
+                    <tbody id="anom-body"></tbody>
+                </table>
+            </div>
+            <p class="chart-note">Each week is compared with the same week in all <em>other</em> years, so an extreme year never hides itself. Activity is in MODIS-equivalent active cell-days per week.</p>
+        </div>
+
+        <!-- VALIDATION -->
+        <div class="fc-panel">
+            <div class="fc-panel-head"><h2>Why harmonize? The raw records do not agree</h2><small>Monthly totals, all years</small></div>
+            <div class="chart-legend" id="valid-legend"></div>
+            <div class="chart" id="valid-chart"></div>
+            <p class="chart-note">VIIRS sees smaller fires and reports several pixels per fire, so its raw counts jump when it starts. The harmonized line counts 5 km burning cells and rescales VIIRS onto the MODIS scale, so it stays continuous across both sensors.</p>
+            <div class="export-row">
+                <button type="button" id="btn-csv" class="secondary-button small">Download daily series (CSV)</button>
+                <a href="{% url 'methodology' %}" class="link-btn">Read the method</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="fc-tip" class="fc-tip" role="tooltip" hidden></div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="{% static 'js/fire_calendar.js' %}"></script>
+<script src="{% static 'js/fire_same_date.js' %}"></script>
+{% endblock %}

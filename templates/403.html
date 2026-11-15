@@ -1,0 +1,10 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Access denied | PLEIADES{% endblock %}
+{% block content %}
+<section class="page-hero">
+    <span class="eyebrow">ERROR 403</span>
+    <h1>Access <span>restricted.</span></h1>
+    <p>Your account does not have permission to view this page.</p>
+    <a href="{% url 'home' %}" class="primary-button">Back to home</a>
+</section>
+{% endblock %}
